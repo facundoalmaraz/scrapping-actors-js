@@ -1,8 +1,8 @@
-import axios from 'axios';
-import cheerio from 'cheerio';
-import express from 'express'
+const axios = require("axios");
+const cheerio = require("cheerio");
+const express = require("express");
 
-const app=express();
+const app = express();
 
 async function obtenerDatos(url) {
   try {
@@ -18,8 +18,10 @@ async function obtenerDatos(url) {
       const nombre = nombreWithSpace.replace(/\n.*$/, "");
       const puntos = $(element).find("td:nth-child(3)").text().trim();
 
-      if (pos && nombre && puntos) {
-        pilotos.push({ pos, nombre, puntos });
+      const puntosValidos = puntos !== '' ? puntos : '0';
+
+      if (pos && nombre) {
+        pilotos.push({ pos, nombre, puntos: puntosValidos });
       }
     });
 
@@ -30,15 +32,22 @@ async function obtenerDatos(url) {
   }
 }
 
-export async function campeonatoAnterior(anio) {
+const campeonatoAnterior = async (anio) => {
   const url = `https://lat.motorsport.com/f1/standings/${anio}/?type=Driver&class=`;
   return obtenerDatos(url);
-}
+};
 
-export async function campeonatoActual() {
-  const url = "https://lat.motorsport.com/f1/standings/2023/?type=Driver&class=";
+const campeonatoActual = async () => {
+  const url =
+    "https://lat.motorsport.com/f1/standings/2023/?type=Driver&class=";
   return obtenerDatos(url);
-}
+};
+
+// Exportar las funciones
+module.exports = {
+  campeonatoAnterior,
+  campeonatoActual
+};
 
 app.get("/", async (req, res) => {
   try {
@@ -55,9 +64,6 @@ app.get("/", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 2000;
 
 app.listen(PORT, () => console.log("Servidor en puerto " + PORT));
-
-
-
